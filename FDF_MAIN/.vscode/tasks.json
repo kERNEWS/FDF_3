@@ -9,11 +9,6 @@
                 "-g",
                 "${file}",
                 "get_next_line.c",
-                "-L.",
-                "libmlx_Linux.a",
-                "-lXext",
-                "-lX11",
-                "-lm",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],

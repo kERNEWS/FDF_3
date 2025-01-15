@@ -5,6 +5,7 @@
 #include "../lib/libft/get_next_line.h"
 #include "../lib/libft/libft.h"
 #include <unistd.h>
+#include <errno.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -15,6 +16,9 @@
 #define LEFT_KEY 65361
 #define RIGHT_KEY 65363
 #define ESC_KEY 65307
+#define KP_Add        0xFFAB  // Keypad Plus
+#define KP_Subtract  0xffad  // Keypad Subtract
+
 
 typedef struct s_map
 {
@@ -27,44 +31,56 @@ typedef struct s_data {
 	void *mlx_ptr;
 	void *win_ptr;
 	t_map **grid;
+	
 	int row;
 	int col;
 	int x_offset;
 	int y_offset;
 	float rotation_angle;
+	int scale;
 } t_data;
 
 void draw_map(t_data *data);
+void replace_nl(char *str);
 
 int handle_keypress(int keycode, t_data *data)
 {
     if (keycode == LEFT_KEY)
     {
-        data->x_offset += 20;  // Move map left
+        data->x_offset -= 40;  // Move map left
     }
     else if (keycode == RIGHT_KEY)
     {
-        data->x_offset -= 20;  // Move map right
+        data->x_offset += 40;  // Move map right
     }
     else if (keycode == UP_KEY)
     {
-        data->y_offset += 20;  // Move map up
+        data->y_offset -= 40;  // Move map up
     }
     else if (keycode == DOWN_KEY)
     {
-        data->y_offset -= 20;  // Move map down
+        data->y_offset += 40;  // Move map down
     }
     else if (keycode == ESC_KEY)
     {
         mlx_destroy_window(data->mlx_ptr, data->win_ptr);  // Close window on ESC key
         exit(0);  // Exit the program
     }
+	else if (keycode == KP_Add)
+	{
+		data->scale += 5;
+	}
+	else if (keycode == KP_Subtract)
+	{
+		data->scale -= 5;
+	}
 
     // Redraw the map with the updated offsets (this does not affect the rotation)
     draw_map(data);
 
     return (0);
 }
+
 
 
 int	ft_strlen(const char *str)
@@ -234,6 +250,7 @@ int count_col(char *file_name)
 	int i;
     i = 0;
 	line = get_next_line(fd);
+	replace_nl(line);
 	content = ft_split(line, ' ');
 	while (content[i])
 		{
@@ -398,11 +415,11 @@ t_map **load_map(char *file_name, int col, int row)
 
 void project_isometric(float x, float y, float z, int *x_proj, int *y_proj, int scale)
 {
-    float angle_x = 45 * M_PI / 180;  // 45° in radians
-    float angle_y = 10 * M_PI / 180;  // 30° in radians
+    float angle_x = 20 * M_PI / 180;  // 45° in radians
+    float angle_y = 25 * M_PI / 180;  // 30° in radians
 
-    *x_proj = (x - y) * cos(angle_x) * scale;
-    *y_proj = (x + y) * sin(angle_y) * scale - z * scale;
+    *x_proj = (x + y) * cos(angle_x) * scale;
+    *y_proj = (x - y) * sin(angle_y) * scale - z * scale * 0.1;
 }
 
 #include <math.h>
@@ -446,7 +463,7 @@ void draw_map(t_data *data)
 {
     int i, k;
     int projx, projy, projx2, projy2;
-    int scale = 10;
+	int scale = data->scale;
 
 
     int x_offset = data->x_offset;
@@ -457,6 +474,7 @@ void draw_map(t_data *data)
     float pivot_x = (data->row - 1) / 2.0;
     float pivot_y = (data->col - 1) / 2.0;
     float pivot_z = 0.0;  // Set this to a meaningful value if needed
+	mlx_clear_window(data->mlx_ptr, data->win_ptr);
 
     for (i = 0; i < data->row; i++)
     {
@@ -510,7 +528,7 @@ void draw_map(t_data *data)
 int update_frame(t_data *data)
 {
     // Increment the rotation angle
-    data->rotation_angle += 0.01;  // Adjust the speed of rotation
+    data->rotation_angle += 0.00;  // Adjust the speed of rotation
     if (data->rotation_angle >= 360.0)
 	{
     	data->rotation_angle = 0.0;
@@ -529,19 +547,20 @@ int update_frame(t_data *data)
 int main() {
 	t_data data;
 	// t_map **grid;
-	int width = 1080;
-	int height = 1500;
+	int width = 2500;
+	int height = 2000;
 
 	data.mlx_ptr = mlx_init();
 	data.win_ptr = mlx_new_window(data.mlx_ptr, width, height, "Y");
 
 	// Handle the "X" button event
-	char *file_name = "test_maps/mars.fdf";
+	char *file_name = "test_maps/100-6.fdf";
 	data.col = count_col(file_name);
 	data.row = count_rows(file_name);
-	data.x_offset = width / 2;
-    data.y_offset = height / 2;
+	data.x_offset = width/4;
+    data.y_offset = height/4;
 	data.rotation_angle = 0.1;
+	data.scale = 20;
 
 	mlx_hook(data.win_ptr, 17, 0, handle_close, &data);
 
@@ -550,7 +569,7 @@ int main() {
 	// draw_line(data.mlx_ptr, data.win_ptr, 0, 0, 500, 600);
 	mlx_key_hook(data.win_ptr, handle_keypress, &data);
 	draw_map(&data);
-	mlx_loop_hook(data.mlx_ptr, update_frame, &data);
+	// mlx_loop_hook(data.mlx_ptr, update_frame, &data);
 	// Start the event loop
 	mlx_loop(data.mlx_ptr);
 

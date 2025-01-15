@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "get_next_line.h"
+#include "lib/libft/get_next_line.h"
+
+void replace_nl(char *str);
+
 int	ft_strlen(const char *str)
 {
 	int	i;
@@ -136,9 +139,11 @@ int count_col(char *file_name)
 	int i;
     i = 0;
 	line = get_next_line(fd);
+	replace_nl(line);
 	content = ft_split(line, ' ');
-	while (content[i])
+	while (content[i] != NULL)
 		{
+			printf("%s ", content[i]);
 			free(content[i]);
 			i++;
 		}
@@ -258,16 +263,16 @@ void convert_and_store(t_map **grid, int row, int col, char **content)
 		i++;
 	}
 }
-void replace_nl(char **str)
+void replace_nl(char *str)
 {
 	int i;
 
 	i = 0;
 
-	while (str[0][i] != '\0')
+	while (str[i] != '\0')
 	{
-		if (str[0][i] == '\n')
-			str[0][i] = ' ';
+		if (str[i] == '\n')
+			str[i] = ' ';
 		i++;
 	}
 }
@@ -294,22 +299,26 @@ t_map **load_map(char *file_name, int col, int row)
 			break;
 		str = strcat(str, s);
 	}
-	replace_nl(&str);
+	replace_nl(str);
 	if (((content) = ft_split(str, ' ')) == NULL)
 		return(NULL);
 	if ((grid = alloc_grid(content, row, col)) == NULL)
 		return (NULL);
+	for (int c = 0; c < row * col; c++)
+	{
+		printf("%s = %i\n", content[c], c);
+	}
 	convert_and_store(grid, row, col, content);
 	return (grid);
 
 }
 int main ()
 {
-	char* file_name = "42.fdf";
+	char* file_name = "test_maps/10-2.fdf";
 	int k = count_rows(file_name);
     int i = count_col(file_name);
-    printf("%i\n", i);
     printf("%i\n", k);
+    printf("%i\n", i);
 
 	t_map **grid = load_map(file_name, i, k);
 	for (int c = 0; c < k; c++)
