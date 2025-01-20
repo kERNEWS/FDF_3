@@ -1,5 +1,5 @@
 #include "../inlcude/fdf.h"
-void	draw_line(void *mlx_ptr, void *win_ptr, int x, int y, int x1, int y1);
+void	draw_line(void *mlx_ptr, void *win_ptr, int x, int y, int x1, int y1, int color);
 
 void project_isometric(float x, float y, float z, int *x_proj, int *y_proj, int scale)
 {
@@ -49,7 +49,7 @@ void draw_map(t_data *data)
                 projx2 += x_offset;
                 projy2 += y_offset;
 
-                draw_line(data->mlx_ptr, data->win_ptr, projx, projy, projx2, projy2);
+                draw_line(data->mlx_ptr, data->win_ptr, projx, projy, projx2, projy2, grid[i][k].color);
             }
 
             if (i + 1 < data->row)
@@ -62,12 +62,12 @@ void draw_map(t_data *data)
                 projx2 += x_offset;
                 projy2 += y_offset;
 
-                draw_line(data->mlx_ptr, data->win_ptr, projx, projy, projx2, projy2);
+                draw_line(data->mlx_ptr, data->win_ptr, projx, projy, projx2, projy2, grid[i][k].color);
             }
         }
     }
 }
-void	draw_line(void *mlx_ptr, void *win_ptr, int x, int y, int x1, int y1)
+void	draw_line(void *mlx_ptr, void *win_ptr, int x, int y, int x1, int y1, int color)
 {
 	int dx = abs(x1 - x);    // Absolute difference in x
 	int dy = abs(y1 - y);    // Absolute difference in y
@@ -77,7 +77,7 @@ void	draw_line(void *mlx_ptr, void *win_ptr, int x, int y, int x1, int y1)
 
 	while (x != x1 || y != y1)
 	{
-		mlx_pixel_put(mlx_ptr, win_ptr, x, y, 0xAAADDD); // Plot the pixel
+		mlx_pixel_put(mlx_ptr, win_ptr, x, y, color); // Plot the pixel
 		int e2 = 2 * err;      // Calculate the error term
 		if (e2 > -dy)          // Adjust error and move in x-direction
 		{

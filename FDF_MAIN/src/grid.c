@@ -65,6 +65,20 @@ t_map **alloc_grid(int row, int col)
 	}
 	return (grid);
 }
+void set_color(char **content, t_map **grid, int t, int i, int k)
+{
+    char *temp;
+    unsigned int color = 0xFFFFFF;
+
+    temp = ft_strchr(content[t], ',');
+    if (temp)
+    {
+        
+        color = ft_atoi_base(temp + 1, 16);
+    }
+
+    grid[i][k].color = color;
+}
 
 
 void convert_and_store(t_map **grid, int row, int col, char **content)
@@ -87,8 +101,11 @@ void convert_and_store(t_map **grid, int row, int col, char **content)
             }
 			if (t >= row * col)
 				return;
-			grid[i][k].height = ft_atoi(content[t++]);
+			grid[i][k].height = ft_atoi(content[t]);
+			set_color(content, grid, t, i, k);
+			printf("%x\n", grid[i][k].color);
 			k++;
+			t++;
 		}
 		i++;
 	}
@@ -113,7 +130,7 @@ t_map **load_map(char *file_name, int col, int row)
 		printf("%s", s);
 		if (s == NULL)
 			break;
-		str = strcat(str, s);
+		str = ft_strcat(str, s);
 		free(s);
 	}
 	replace_nl(str);

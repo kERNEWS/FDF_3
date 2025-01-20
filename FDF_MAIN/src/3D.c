@@ -14,12 +14,11 @@ int main(int argc, char *argv[])
 	// Handle the "X" button event
 	char *file = argv[argc - 1];
 	char file_dir [100] = "test_maps/";
-	strcat(file_dir, file);
+	ft_strcat(file_dir, file);
 	data.col = count_col(file_dir);
 	data.row = count_rows(file_dir);
-	data.x_offset = width/4;
-    data.y_offset = height/4;
-	data.rotation_angle = 0.1;
+	data.x_offset = width/2;
+    data.y_offset = height/2;
 	data.scale = 15;
 
 	mlx_hook(data.win_ptr, 17, 0, handle_close, &data);

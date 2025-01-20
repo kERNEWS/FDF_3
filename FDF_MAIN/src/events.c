@@ -23,7 +23,7 @@ int handle_keypress(int keycode, t_data *data)
         mlx_destroy_window(data->mlx_ptr, data->win_ptr);  // Close window on ESC key
         exit(0);  // Exit the program
     }
-	else if (keycode == UP_KEY)
+	else if (keycode == KP_Add)
 	{
 		data->scale += 5;
 	}

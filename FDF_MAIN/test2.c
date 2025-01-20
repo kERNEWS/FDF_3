@@ -1,37 +1,16 @@
-#include "../inlcude/fdf.h"
-char	*ft_strcat(char *p, const char *src)
-{
-	size_t	len_p;
-	size_t	len_src;
-	size_t	i;
+#include "inlcude/fdf.h"
 
-	len_p = ft_strlen(p);
-	len_src = ft_strlen(src);
-	i = 0;
-	while (i < len_src)
+int	ft_isdigit(int c)
+{
+	if (c >= '0' && c <= '9')
 	{
-		p[len_p] = src[i];
-		i++;
-		len_p++;
+		return (1);
 	}
-	p[len_p] = '\0';
-	return (p);
-}
-
-void replace_nl(char *str)
-{
-	int i;
-
-	i = 0;
-
-	while (str[i] != '\0')
+	else
 	{
-		if (str[i] == '\n')
-			str[i] = ' ';
-		i++;
+		return (0);
 	}
 }
-
 unsigned int ft_atoi_base(const char *str, int base)
 {
     unsigned int result = 0;
@@ -54,15 +33,9 @@ unsigned int ft_atoi_base(const char *str, int base)
     return result;
 }
 
-
-int update_frame(t_data *data)
+int main()
 {
-    // Increment the rotation angle
-	mlx_clear_window(data->mlx_ptr, data->win_ptr);
-    // Redraw the map
-	
-    draw_map(data);
-	 usleep(16667);
-
-    return (0);  // Returning 0 tells MiniLibX to continue the loop
+    char *c = ",0xFFFFDD";
+    unsigned int d = ft_atoi_base(c + 1, 16);
+    printf("%i", d);
 }

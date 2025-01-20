@@ -38,7 +38,6 @@ typedef struct s_data {
 	int col;
 	int x_offset;
 	int y_offset;
-	float rotation_angle;
 	int scale;
 } t_data;
 
@@ -53,8 +52,8 @@ void convert_and_store(t_map **grid, int row, int col, char **content);
 void draw_map(t_data *data);
 void replace_nl(char *str);
 int update_frame(t_data *data);
-
-
+char	*ft_strcat(char *p, const char *src);
+unsigned int ft_atoi_base(const char *str, int base);
 
 
 #endif
