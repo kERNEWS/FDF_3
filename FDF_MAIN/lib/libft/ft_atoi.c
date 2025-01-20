@@ -39,6 +39,8 @@ int	ft_atoi(const char *nptr)
 
 	i = 0;
 	res = 0;
+	if (nptr == NULL)
+		return (0);
 	while (is_space(nptr[i]))
 	{
 		i++;

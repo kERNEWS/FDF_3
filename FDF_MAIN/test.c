@@ -149,7 +149,8 @@ int count_col(char *file_name)
 		}
 		free(content);
 		free(line);
-	while(get_next_line(fd) != NULL)
+	while((line = get_next_line(fd)) != NULL)
+		free(line);
 	close(fd);
 	return (i);
 }
@@ -176,6 +177,9 @@ int	ft_atoi(const char *nptr)
 	size_t	i;
 	int		res;
 	int		sign;
+
+	if (nptr == NULL)
+		return (0);
 
 	i = 0;
 	res = 0;
@@ -221,7 +225,7 @@ typedef struct s_map
 
 }t_map;
 
-t_map **alloc_grid(char **content, int row, int col)
+t_map **alloc_grid(int row, int col)
 {
 	t_map **grid;
 	int i;
@@ -255,10 +259,11 @@ void convert_and_store(t_map **grid, int row, int col, char **content)
 		k = 0;
 		while(k < col)
 		{
-			if (t >= row * col)
+			if (t >=row * col || k * i >= row * col)
 				return;
-			grid[i][k].height = ft_atoi(content[t++]);
+			grid[i][k].height = ft_atoi(content[t]);
 			k++;
+			t++;
 		}
 		i++;
 	}
@@ -289,44 +294,64 @@ t_map **load_map(char *file_name, int col, int row)
 	int fd = open(file_name, O_RDONLY);
 	if (fd < 0)
 		return (NULL);
-	str = malloc((col * row) * sizeof(char *));
+	str = malloc((col * row) * sizeof(char *) + 1);
 	if (str == NULL)
 		return (NULL);
 	while(1)
 	{
 		s = get_next_line(fd);
+		printf("%s", s);
 		if (s == NULL)
 			break;
 		str = strcat(str, s);
+		free(s);
 	}
 	replace_nl(str);
-	if (((content) = ft_split(str, ' ')) == NULL)
+	if ((content = ft_split(str, ' ')) == NULL)
 		return(NULL);
-	if ((grid = alloc_grid(content, row, col)) == NULL)
+	free(str);
+	if ((grid = alloc_grid(row, col)) == NULL)
 		return (NULL);
-	for (int c = 0; c < row * col; c++)
+	for (int c = 0; c < row * col - 1; c++)
 	{
-		printf("%s = %i\n", content[c], c);
+		printf("%s = %i ", content[c], c);
 	}
 	convert_and_store(grid, row, col, content);
-	return (grid);
+	for (int c = 0; content[c]; c++) // Properly free the split content
+        free(content[c]);
+    free(content);
 
+	return (grid);
 }
-int main ()
+int main (int argc, char *argv[])
 {
-	char* file_name = "test_maps/10-2.fdf";
-	int k = count_rows(file_name);
-    int i = count_col(file_name);
+    char* file_name = argv[argc -1];
+    int k = count_rows(file_name); // Number of rows
+    int i = count_col(file_name);  // Number of columns
     printf("%i\n", k);
     printf("%i\n", i);
 
-	t_map **grid = load_map(file_name, i, k);
-	for (int c = 0; c < k; c++)
-	{
-		for (int x = 0; x < i; x++)
-		{
-			printf("%i ", grid[c][x].height);
-		}
-		printf("\n");
-	}
+    // Load the map into grid
+    t_map **grid = load_map(file_name, i, k);
+
+    // Free the grid rows
+    for (int row = 0; row < k; row++) 
+    {
+        free(grid[row]); // Free each row
+    }
+
+    // Free the grid itself
+    free(grid);
+
+    return 0; // Successful exit
 }
+
+	
+	// for (int c = 0; c < k; c++)
+	// {
+	// 	for (int x = 0; x < i; x++)
+	// 	{
+	// 		printf("%i ", grid[c][x].height);
+	// 	}
+	// 	printf("\n");
+	// }
