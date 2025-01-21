@@ -103,12 +103,42 @@ void convert_and_store(t_map **grid, int row, int col, char **content)
 				return;
 			grid[i][k].height = ft_atoi(content[t]);
 			set_color(content, grid, t, i, k);
-			printf("%x\n", grid[i][k].color);
+			// printf("%x\n", grid[i][k].color);
 			k++;
 			t++;
 		}
 		i++;
 	}
+}
+
+
+static char	*allocate_space(char *line, size_t *capacity)
+{
+	size_t		i;
+	char	*fresh_line;
+	size_t line_len;
+
+	i = 0;
+	*capacity = *capacity * 2;
+	fresh_line = malloc (*capacity * (sizeof(char)));
+	if (!fresh_line)
+		return (NULL);
+	line_len = ft_strlen(line);
+	while (line_len != 0 && i <= line_len)
+	{
+		fresh_line[i] = line[i];
+		i++;
+	}
+	free (line);
+	line = fresh_line;
+	return (line);
+}
+
+int need_more_space(char *str, size_t *capacity, char *s)
+{
+	if (((size_t)ft_strlen(str) + (size_t)ft_strlen(s) + 1) < *capacity)
+		return (0);
+	return(1);
 }
 
 t_map **load_map(char *file_name, int col, int row)
@@ -117,20 +147,31 @@ t_map **load_map(char *file_name, int col, int row)
 	char *s;
 	char *str;
 	t_map **grid;
+	size_t capacity;
+
+	capacity = 1028;
 
 	int fd = open(file_name, O_RDONLY);
+	if (!(str = malloc(1)) && (s = malloc(1)))
+		return(NULL);
+	str[0] = '\0';
 	if (fd < 0)
-		return (NULL);
-	str = malloc((col * row) * sizeof(char *) + 1);
-	if (str == NULL)
 		return (NULL);
 	while(1)
 	{
+		if (need_more_space(str, &capacity, s))
+		{
+			if (!(str = (allocate_space(str, &capacity))))
+			{
+				free(str);
+				return(NULL);
+			}
+		}
 		s = get_next_line(fd);
-		printf("%s", s);
+		// printf("%s", s);
 		if (s == NULL)
 			break;
-		str = ft_strcat(str, s);
+		ft_strlcat(str, s, capacity);
 		free(s);
 	}
 	replace_nl(str);
@@ -139,14 +180,14 @@ t_map **load_map(char *file_name, int col, int row)
 	free(str);
 	if ((grid = alloc_grid(row, col)) == NULL)
 		return (NULL);
-	for (int c = 0; c < row * col; c++)
-	{
-		printf("%s = %i ", content[c], c);
-	}
+	// for (int c = 0; c < row * col; c++)
+	// {
+	// 	printf("%s = %i ", content[c], c);
+	// }
 	convert_and_store(grid, row, col, content);
 	for (int c = 0; content[c]; c++) // Properly free the split content
         free(content[c]);
     free(content);
-
+	close(fd);
 	return (grid);
 }

@@ -5,6 +5,8 @@ char	*ft_strcat(char *p, const char *src)
 	size_t	len_src;
 	size_t	i;
 
+	if (p == NULL)
+		return(NULL);
 	len_p = ft_strlen(p);
 	len_src = ft_strlen(src);
 	i = 0;

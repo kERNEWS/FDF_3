@@ -1,10 +1,50 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include "lib/libft/get_next_line.h"
+#include "inlcude/fdf.h"
 
-void replace_nl(char *str);
+#include "lib/libft/libft.h"
 
+static int	is_space(char c)
+{
+	if (c == ' ' || (c >= '\t' && c <= '\r'))
+	{
+		return (1);
+	}
+	return (0);
+}
+
+static int	check_sign(char c)
+{
+	if (c == '-')
+	{
+		return (-1);
+	}
+	return (1);
+}
+
+int	ft_atoi(const char *nptr)
+{
+	size_t	i;
+	int		res;
+	int		sign;
+
+	i = 0;
+	res = 0;
+	if (nptr == NULL)
+		return (0);
+	while (is_space(nptr[i]))
+	{
+		i++;
+	}
+	sign = check_sign(nptr[i]);
+	if (nptr[i] == '-' || nptr[i] == '+')
+		i++;
+	while (nptr[i] >= '0' && nptr[i] <= '9')
+	{
+		res = res * 10 + nptr[i] - '0';
+		i++;
+	}
+	res *= sign;
+	return (res);
+}
 int	ft_strlen(const char *str)
 {
 	int	i;
@@ -87,6 +127,29 @@ static size_t	len_substr(const char *s, char c)
 	return (len);
 }
 
+size_t	ft_strlcat(char *dst, const char *src, size_t size)
+{
+	size_t	len_dst;
+	size_t	len_src;
+	size_t	i;
+
+	len_dst = ft_strlen(dst);
+	len_src = ft_strlen(src);
+	i = 0;
+	if (size <= len_dst)
+		return (size + len_src);
+	else
+	{
+		while (src[i] && (len_dst + i) < (size - 1))
+		{
+			dst[len_dst + i] = src[i];
+			i++;
+		}
+		dst[len_dst + i] = '\0';
+		return (len_dst + len_src);
+	}
+}
+
 char	**ft_split(char const *s, char c)
 {
 	size_t	i;
@@ -113,6 +176,7 @@ char	**ft_split(char const *s, char c)
 	array[i] = NULL;
 	return (array);
 }
+
 int count_rows(char *file_name)
 {
 	char *line;
@@ -133,7 +197,9 @@ int count_col(char *file_name)
 {
 	int fd = open(file_name, O_RDONLY);
     if (fd < 0)
-        return (-1);
+	{
+		return (-1);
+	}
 	char *line;
 	char **content;
 	int i;
@@ -143,7 +209,6 @@ int count_col(char *file_name)
 	content = ft_split(line, ' ');
 	while (content[i] != NULL)
 		{
-			printf("%s ", content[i]);
 			free(content[i]);
 			i++;
 		}
@@ -154,77 +219,21 @@ int count_col(char *file_name)
 	close(fd);
 	return (i);
 }
-static int	is_space(char c)
-{
-	if (c == ' ' || (c >= '\t' && c <= '\r'))
-	{
-		return (1);
-	}
-	return (0);
-}
 
-static int	check_sign(char c)
-{
-	if (c == '-')
-	{
-		return (-1);
-	}
-	return (1);
-}
 
-int	ft_atoi(const char *nptr)
+void replace_nl(char *str)
 {
-	size_t	i;
-	int		res;
-	int		sign;
-
-	if (nptr == NULL)
-		return (0);
+	int i;
 
 	i = 0;
-	res = 0;
-	while (is_space(nptr[i]))
+
+	while (str[i] != '\0')
 	{
+		if (str[i] == '\n')
+			str[i] = ' ';
 		i++;
 	}
-	sign = check_sign(nptr[i]);
-	if (nptr[i] == '-' || nptr[i] == '+')
-		i++;
-	while (nptr[i] >= '0' && nptr[i] <= '9')
-	{
-		res = res * 10 + nptr[i] - '0';
-		i++;
-	}
-	res *= sign;
-	return (res);
 }
-
-static char	*strcat(char *p, const char *src)
-{
-	size_t	len_p;
-	size_t	len_src;
-	size_t	i;
-
-	len_p = ft_strlen(p);
-	len_src = ft_strlen(src);
-	i = 0;
-	while (i < len_src)
-	{
-		p[len_p] = src[i];
-		i++;
-		len_p++;
-	}
-	p[len_p] = '\0';
-	return (p);
-}
-
-typedef struct s_map
-{
-	int height;
-	int color;
-
-}t_map;
-
 t_map **alloc_grid(int row, int col)
 {
 	t_map **grid;
@@ -259,30 +268,51 @@ void convert_and_store(t_map **grid, int row, int col, char **content)
 		k = 0;
 		while(k < col)
 		{
-			if (t >=row * col || k * i >= row * col)
+			if (!content[t]) // Ensure content[t] is not NULL
+            {
+                fprintf(stderr, "Error: NULL value in content at index %d\n", t);
+                return;
+            }
+			if (t >= row * col)
 				return;
 			grid[i][k].height = ft_atoi(content[t]);
+			printf("%x\n", grid[i][k].color);
 			k++;
 			t++;
 		}
 		i++;
 	}
 }
-void replace_nl(char *str)
+
+
+static char	*allocate_space(char *line, size_t *capacity)
 {
-	int i;
+	size_t		i;
+	char	*fresh_line;
+	size_t line_len;
 
 	i = 0;
-
-	while (str[i] != '\0')
+	*capacity = *capacity * 2;
+	fresh_line = malloc (*capacity * (sizeof(char)));
+	if (!fresh_line)
+		return (NULL);
+	line_len = ft_strlen(line);
+	while (line_len != 0 && i <= line_len)
 	{
-		if (str[i] == '\n')
-			str[i] = ' ';
+		fresh_line[i] = line[i];
 		i++;
 	}
+	free (line);
+	line = fresh_line;
+	return (line);
 }
 
-
+int need_more_space(char *str, size_t *capacity, char *s)
+{
+	if (((size_t)ft_strlen(str) + (size_t)ft_strlen(s) + 1) < *capacity)
+		return (0);
+	return(1);
+}
 
 t_map **load_map(char *file_name, int col, int row)
 {
@@ -290,20 +320,34 @@ t_map **load_map(char *file_name, int col, int row)
 	char *s;
 	char *str;
 	t_map **grid;
+	size_t capacity;
+
+	capacity = 1028;
 
 	int fd = open(file_name, O_RDONLY);
+	if (!(str = malloc(1)))
+		return(NULL);
+	if (!(s = malloc(1)))
+		return(NULL);
+	str[0] = '\0';
+	s[0] = '\0';
 	if (fd < 0)
-		return (NULL);
-	str = malloc((col * row) * sizeof(char *) + 1);
-	if (str == NULL)
 		return (NULL);
 	while(1)
 	{
+		if (need_more_space(str, &capacity, s))
+		{
+			if (!(str = (allocate_space(str, &capacity))))
+			{
+				free(str);
+				return(NULL);
+			}
+		}
 		s = get_next_line(fd);
-		printf("%s", s);
+		// printf("%s", s);
 		if (s == NULL)
 			break;
-		str = strcat(str, s);
+		ft_strlcat(str, s, capacity);
 		free(s);
 	}
 	replace_nl(str);
@@ -312,7 +356,7 @@ t_map **load_map(char *file_name, int col, int row)
 	free(str);
 	if ((grid = alloc_grid(row, col)) == NULL)
 		return (NULL);
-	for (int c = 0; c < row * col - 1; c++)
+	for (int c = 0; c < row * col; c++)
 	{
 		printf("%s = %i ", content[c], c);
 	}
@@ -320,12 +364,12 @@ t_map **load_map(char *file_name, int col, int row)
 	for (int c = 0; content[c]; c++) // Properly free the split content
         free(content[c]);
     free(content);
-
+	close(fd);
 	return (grid);
 }
 int main (int argc, char *argv[])
 {
-    char* file_name = argv[argc -1];
+    char* file_name = "/test_maps/pylone.fdf";
     int k = count_rows(file_name); // Number of rows
     int i = count_col(file_name);  // Number of columns
     printf("%i\n", k);
