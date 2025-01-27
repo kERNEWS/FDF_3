@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "../lib/libft/get_next_line.h"
-#include "../lib/libft/libft.h"
+// #include "../lib/libft/libft.h"
 #include <unistd.h>
 #include <errno.h>
 #include "../inlcude/fdf.h"

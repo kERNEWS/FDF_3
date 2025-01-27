@@ -1,7 +1,35 @@
 #include "inlcude/fdf.h"
+int	ft_strlen(const char *str)
+{
+	int	i;
 
-#include "lib/libft/libft.h"
+	i = 0;
+	while (*str++)
+	{
+		i++;
+	}
+	return (i);
+}
+static size_t	count_substr(char const *s, char c)
+{
+	size_t	numb;
+	size_t	i;
 
+	numb = 0;
+	i = 0;
+	while (s[i] != '\0')
+	{
+		while (s[i] == c && s[i] != '\0')
+			i++;
+		if (s[i] != '\0')
+		{
+			numb++;
+			while (s[i] != c && s[i] != '\0')
+				i++;
+		}
+	}
+	return (numb);
+}
 static int	is_space(char c)
 {
 	if (c == ' ' || (c >= '\t' && c <= '\r'))
@@ -45,16 +73,20 @@ int	ft_atoi(const char *nptr)
 	res *= sign;
 	return (res);
 }
-int	ft_strlen(const char *str)
+char	*ft_strchr(const char *s, int c)
 {
-	int	i;
-
-	i = 0;
-	while (*str++)
+	while (*s != '\0')
 	{
-		i++;
+		if (*s == (char)c)
+		{
+			return ((char *)s);
+		}
+		s++;
 	}
-	return (i);
+	if ((char) c == '\0')
+		return ((char *)s);
+	else
+		return (NULL);
 }
 size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 {
@@ -75,26 +107,7 @@ size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 	dst[i] = '\0';
 	return (len);
 }
-static size_t	count_substr(char const *s, char c)
-{
-	size_t	numb;
-	size_t	i;
 
-	numb = 0;
-	i = 0;
-	while (s[i] != '\0')
-	{
-		while (s[i] == c && s[i] != '\0')
-			i++;
-		if (s[i] != '\0')
-		{
-			numb++;
-			while (s[i] != c && s[i] != '\0')
-				i++;
-		}
-	}
-	return (numb);
-}
 
 static int	free_ifmalloc_fails(char **array, size_t i)
 {
@@ -127,30 +140,33 @@ static size_t	len_substr(const char *s, char c)
 	return (len);
 }
 
-size_t	ft_strlcat(char *dst, const char *src, size_t size)
+char	**ft_split(char const *s, char c, size_t tot_num)
 {
-	size_t	len_dst;
-	size_t	len_src;
 	size_t	i;
+	size_t	num_of_substr;
+	char	**array;
+	size_t	len;
 
-	len_dst = ft_strlen(dst);
-	len_src = ft_strlen(src);
 	i = 0;
-	if (size <= len_dst)
-		return (size + len_src);
-	else
+	array = malloc((tot_num + 1) * sizeof(char *));
+	if (array == NULL)
+		return (NULL);
+	while (*s && i < tot_num)
 	{
-		while (src[i] && (len_dst + i) < (size - 1))
-		{
-			dst[len_dst + i] = src[i];
-			i++;
-		}
-		dst[len_dst + i] = '\0';
-		return (len_dst + len_src);
+		s = skip_delimeters(s, c);
+		len = len_substr(s, c);
+		array[i] = malloc((len + 1) * sizeof(char));
+		if (free_ifmalloc_fails(array, i) == 1)
+			return (NULL);
+		ft_strlcpy(array[i], s, len + 1);
+		i++;
+		s += len;
 	}
+	array[i] = NULL;
+	return (array);
 }
 
-char	**ft_split(char const *s, char c)
+char	**ft_split_old(char const *s, char c)
 {
 	size_t	i;
 	size_t	num_of_substr;
@@ -177,6 +193,95 @@ char	**ft_split(char const *s, char c)
 	return (array);
 }
 
+int	ft_isdigit(int c)
+{
+	if (c >= '0' && c <= '9')
+	{
+		return (1);
+	}
+	else
+	{
+		return (0);
+	}
+}
+
+size_t	ft_strlcat(char *dst, const char *src, size_t size)
+{
+	size_t	len_dst;
+	size_t	len_src;
+	size_t	i;
+
+	len_dst = ft_strlen(dst);
+	len_src = ft_strlen(src);
+	i = 0;
+	if (size <= len_dst)
+		return (size + len_src);
+	else
+	{
+		while (src[i] && (len_dst + i) < (size - 1))
+		{
+			dst[len_dst + i] = src[i];
+			i++;
+		}
+		dst[len_dst + i] = '\0';
+		return (len_dst + len_src);
+	}
+}
+char	*ft_strcat(char *p, const char *src)
+{
+	size_t	len_p;
+	size_t	len_src;
+	size_t	i;
+
+	if (p == NULL)
+		return(NULL);
+	len_p = ft_strlen(p);
+	len_src = ft_strlen(src);
+	i = 0;
+	while (i < len_src)
+	{
+		p[len_p] = src[i];
+		i++;
+		len_p++;
+	}
+	p[len_p] = '\0';
+	return (p);
+}
+
+void replace_nl(char *str)
+{
+	int i;
+
+	i = 0;
+
+	while (str[i] != '\0')
+	{
+		if (str[i] == '\n')
+			str[i] = ' ';
+		i++;
+	}
+}
+unsigned int ft_atoi_base(const char *str, int base)
+{
+    unsigned int result = 0;
+
+    // Skip optional "0x" or "0X" for base 16
+    if (base == 16 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+        str += 2;
+
+    while (*str && (ft_isdigit(*str) || (*str >= 'A' && *str <= 'F') || (*str >= 'a' && *str <= 'f')))
+    {
+        result *= base;
+        if (ft_isdigit(*str))
+            result += *str - '0';
+        else if (*str >= 'A' && *str <= 'F')
+            result += *str - 'A' + 10;
+        else if (*str >= 'a' && *str <= 'f')
+            result += *str - 'a' + 10;
+        str++;
+    }
+    return result;
+}
 int count_rows(char *file_name)
 {
 	char *line;
@@ -206,7 +311,7 @@ int count_col(char *file_name)
     i = 0;
 	line = get_next_line(fd);
 	replace_nl(line);
-	content = ft_split(line, ' ');
+	content = ft_split_old(line, ' ');
 	while (content[i] != NULL)
 		{
 			free(content[i]);
@@ -221,19 +326,6 @@ int count_col(char *file_name)
 }
 
 
-void replace_nl(char *str)
-{
-	int i;
-
-	i = 0;
-
-	while (str[i] != '\0')
-	{
-		if (str[i] == '\n')
-			str[i] = ' ';
-		i++;
-	}
-}
 t_map **alloc_grid(int row, int col)
 {
 	t_map **grid;
@@ -253,8 +345,29 @@ t_map **alloc_grid(int row, int col)
 		}
 		i++;
 	}
+	// for (int j = 0; j < col; j++)
+    // {
+    //     grid[i][j].height = 0;
+    //     grid[i][j].color = 0xFFFFFF; // Default color
+    // }
 	return (grid);
 }
+void set_color(char **content, t_map **grid, int t, int i, int k)
+{
+    char *temp;
+    unsigned int color = 0xFFFFFF;
+
+    temp = ft_strchr(content[t], ',');
+    if (temp)
+    {
+        
+        color = ft_atoi_base(temp + 1, 16);
+    }
+
+    grid[i][k].color = color;
+}
+
+
 void convert_and_store(t_map **grid, int row, int col, char **content)
 {
 	int i;
@@ -276,7 +389,8 @@ void convert_and_store(t_map **grid, int row, int col, char **content)
 			if (t >= row * col)
 				return;
 			grid[i][k].height = ft_atoi(content[t]);
-			printf("%x\n", grid[i][k].color);
+			set_color(content, grid, t, i, k);
+			// printf("%x\n", grid[i][k].color);
 			k++;
 			t++;
 		}
@@ -323,10 +437,9 @@ t_map **load_map(char *file_name, int col, int row)
     size_t capacity = 1028;
 
     int fd = open(file_name, O_RDONLY);
-    if (fd < 0 || !(str = malloc(capacity)) || !(s = malloc(1)))
+    if (fd < 0 || !(str = malloc(capacity)))
         return (NULL);
     str[0] = '\0'; // Initialize as an empty string
-    s[0] = '\0';
 
     while (1)
     {
@@ -352,8 +465,9 @@ t_map **load_map(char *file_name, int col, int row)
     }
 
     replace_nl(str); // Replace newlines in the combined string
+	// printf("%s\n", str);
 
-    content = ft_split(str, ' '); // Split into tokens
+    content = ft_split(str, ' ', row * col); // Split into tokens
     free(str); // Free combined string after splitting
 
     if (!content || !(grid = alloc_grid(row, col)))
@@ -372,7 +486,7 @@ t_map **load_map(char *file_name, int col, int row)
 
 	for (int c = 0; c < row * col; c++)
 	{
-		printf("%s = %i ", content[c], c);
+		printf("%s = %i \n", content[c], c);
 	}
     for (int c = 0; content[c]; c++) // Free split content
         free(content[c]);

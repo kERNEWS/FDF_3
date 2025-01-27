@@ -12,7 +12,7 @@
 
 #include "get_next_line.h"
 #ifndef MAX_FD
-# define MAX_FD 1024
+# define MAX_FD 100000
 #endif
 
 static char	*re_allocate(t_result *line, int capacity_needed)
