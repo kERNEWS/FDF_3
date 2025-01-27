@@ -63,6 +63,11 @@ t_map **alloc_grid(int row, int col)
 		}
 		i++;
 	}
+	// for (int j = 0; j < col; j++)
+    // {
+    //     grid[i][j].height = 0;
+    //     grid[i][j].color = 0xFFFFFF; // Default color
+    // }
 	return (grid);
 }
 void set_color(char **content, t_map **grid, int t, int i, int k)
@@ -143,51 +148,66 @@ int need_more_space(char *str, size_t *capacity, char *s)
 
 t_map **load_map(char *file_name, int col, int row)
 {
-	char **content;
-	char *s;
-	char *str;
-	t_map **grid;
-	size_t capacity;
+    char **content;
+    char *s;
+    char *str;
+    t_map **grid;
+    size_t capacity = 1028;
 
-	capacity = 1028;
+    int fd = open(file_name, O_RDONLY);
+    if (fd < 0 || !(str = malloc(capacity)))
+        return (NULL);
+    str[0] = '\0'; // Initialize as an empty string
 
-	int fd = open(file_name, O_RDONLY);
-	if (!(str = malloc(1)) && (s = malloc(1)))
-		return(NULL);
-	str[0] = '\0';
-	if (fd < 0)
-		return (NULL);
-	while(1)
+    while (1)
+    {
+        s = get_next_line(fd);
+        if (s == NULL) // Handle EOF or error
+            break;
+
+        if (need_more_space(str, &capacity, s))
+        {
+            char *temp = allocate_space(str, &capacity);
+            if (!temp)
+            {
+                free(s);
+                free(str);
+                close(fd);
+                return (NULL);
+            }
+            str = temp;
+        }
+
+        ft_strlcat(str, s, capacity); // Append line to str
+        free(s); // Free the line returned by get_next_line
+    }
+
+    replace_nl(str); // Replace newlines in the combined string
+
+    content = ft_split(str, ' '); // Split into tokens
+    free(str); // Free combined string after splitting
+
+    if (!content || !(grid = alloc_grid(row, col)))
+    {
+        if (content)
+        {
+            for (int c = 0; content[c]; c++)
+                free(content[c]);
+            free(content);
+        }
+        close(fd);
+        return (NULL);
+    }
+
+    convert_and_store(grid, row, col, content);
+
+	for (int c = 0; c < row * col; c++)
 	{
-		if (need_more_space(str, &capacity, s))
-		{
-			if (!(str = (allocate_space(str, &capacity))))
-			{
-				free(str);
-				return(NULL);
-			}
-		}
-		s = get_next_line(fd);
-		// printf("%s", s);
-		if (s == NULL)
-			break;
-		ft_strlcat(str, s, capacity);
-		free(s);
+		printf("%s = %i ", content[c], c);
 	}
-	replace_nl(str);
-	if ((content = ft_split(str, ' ')) == NULL)
-		return(NULL);
-	free(str);
-	if ((grid = alloc_grid(row, col)) == NULL)
-		return (NULL);
-	// for (int c = 0; c < row * col; c++)
-	// {
-	// 	printf("%s = %i ", content[c], c);
-	// }
-	convert_and_store(grid, row, col, content);
-	for (int c = 0; content[c]; c++) // Properly free the split content
+    for (int c = 0; content[c]; c++) // Free split content
         free(content[c]);
     free(content);
-	close(fd);
-	return (grid);
+    close(fd);
+    return (grid);
 }

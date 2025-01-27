@@ -3,7 +3,7 @@ void	draw_line(void *mlx_ptr, void *win_ptr, int x, int y, int x1, int y1, int c
 
 void project_isometric(float x, float y, float z, int *x_proj, int *y_proj, int scale)
 {
-    float angle_x = 40 * M_PI / 180;  // 45° in radians
+    float angle_x = 45 * M_PI / 180;  // 45° in radians
     float angle_y = 25 * M_PI / 180;  // 30° in radians
 
     *x_proj = (x + y) * cos(angle_x) * scale;
@@ -31,14 +31,10 @@ void draw_map(t_data *data)
             float x = i;
             float y = k;
             float z = grid[i][k].height;
-
-
-            // Project the rotated point
             project_isometric(x, y, z, &projx, &projy, scale);
             projx += x_offset;
             projy += y_offset;
 
-            // Draw horizontal and vertical lines
             if (k + 1 < data->col)
             {
                 float next_x = i;

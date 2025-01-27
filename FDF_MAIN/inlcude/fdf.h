@@ -25,7 +25,7 @@
 typedef struct s_map
 {
 	int height;
-	int color;
+	unsigned int color;
 
 }t_map;
 

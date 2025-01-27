@@ -16,7 +16,9 @@ int main(int argc, char *argv[])
 	char file_dir [100] = "test_maps/";
 	ft_strcat(file_dir, file);
 	data.col = count_col(file_dir);
+	printf("COLS COUNTED");
 	data.row = count_rows(file_dir);
+	printf("ROWS COUNTED");
 	data.x_offset = width/2;
     data.y_offset = height/2;
 	data.scale = 15;
@@ -25,6 +27,7 @@ int main(int argc, char *argv[])
 
 
 	data.grid = load_map(file_dir, data.col, data.row);
+	printf("MAP LOADED");
 	// draw_line(data.mlx_ptr, data.win_ptr, 0, 0, 500, 600);
 	mlx_key_hook(data.win_ptr, handle_keypress, &data);
 	draw_map(&data);
